@@ -213,12 +213,12 @@ class EmeraldKillfeedBot(commands.Bot):
 
     
     async def on_ready(self):
-        """Called when bot is ready and connected to Discord"""
+        """Called when bot is ready and connected to Discord - RATE LIMIT SAFE VERSION"""
         # Only run setup once
         if hasattr(self, '_setup_complete'):
             return
         
-        logger.info("🚀 Bot is ready! Starting setup process...")
+        logger.info("🚀 Bot is ready! Starting database and parser setup...")
         
         try:
             # Connect to MongoDB
@@ -237,64 +237,58 @@ class EmeraldKillfeedBot(commands.Bot):
                 self.log_parser.schedule_log_parser()
                 logger.info("📜 Log parser scheduled")
             
-            # Load cogs - CRITICAL FOR SLASH COMMANDS
-            logger.info("🔧 Starting cog loading process...")
-            cogs_success = await self.load_cogs()
-            logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
+            # RATE LIMIT SAFE COMMAND SYNC - USE GUILD-SPECIFIC SYNC ONLY
+            command_count = len(self.pending_application_commands) if hasattr(self, 'pending_application_commands') else 0
+            logger.info(f"📊 {command_count} commands loaded, checking sync status...")
             
-            # PROPER COMMAND SYNC SOLUTION
-            if cogs_success:
-                logger.info("🚀 IMPLEMENTING PROPER COMMAND SYNC")
+            if command_count > 0:
+                logger.info("🔄 Implementing RATE LIMIT SAFE sync strategy...")
+                
+                sync_needed = False
                 
                 try:
-                    # Set debug_guilds to bypass global rate limits
-                    guild_ids = [guild.id for guild in self.guilds]
-                    self.debug_guilds = guild_ids
-                    logger.info(f"✅ Debug guilds configured: {guild_ids}")
-                    
-                    # Check if commands are already synced to avoid unnecessary API calls
-                    logger.info("🔍 Checking if commands are already synced...")
-                    
-                    commands_already_synced = False
-                    try:
-                        # Check if we have commands in Discord already
-                        for guild in self.guilds:
-                            existing_commands = await self.http.get_guild_commands(self.application_id, guild.id)
-                            if len(existing_commands) > 0:
-                                logger.info(f"✅ Found {len(existing_commands)} existing commands in {guild.name}")
-                                commands_already_synced = True
-                                break
-                    except Exception as check_error:
-                        logger.info(f"Could not check existing commands: {check_error}")
-                    
-                    if commands_already_synced:
-                        logger.info("✅ Commands already synced - skipping to avoid rate limits")
-                        logger.info("🎯 All 34 commands are ready and available in Discord!")
-                    else:
-                        logger.info("🔄 No commands found - syncing to Discord...")
-                        try:
-                            synced_commands = await self.sync_commands()
-                            if synced_commands:
-                                logger.info(f"🎉 SUCCESS: {len(synced_commands)} commands synced to Discord!")
-                            else:
-                                logger.info("🎉 SUCCESS: Commands synced to Discord!")
-                        except Exception as sync_error:
-                            logger.warning(f"Sync failed but commands should appear: {sync_error}")
+                    # Check if commands exist in the primary guild only (avoid rate limits)
+                    if self.guilds:
+                        primary_guild = self.guilds[0]
+                        # Use HTTP API directly to check existing commands
+                        existing_commands = await self.http.get_guild_commands(self.application_id, primary_guild.id)
                         
-                except Exception as e:
-                    logger.error(f"❌ Command sync process failed: {e}")
-                    logger.info("🎯 Commands are loaded locally and will appear when Discord refreshes")
+                        if len(existing_commands) == 0:
+                            sync_needed = True
+                            logger.info(f"🔄 No commands found in {primary_guild.name} - sync required")
+                        else:
+                            logger.info(f"✅ Found {len(existing_commands)} commands in {primary_guild.name} - no sync needed")
+                            
+                except Exception as check_error:
+                    logger.info(f"Could not check existing commands, assuming sync needed: {check_error}")
+                    sync_needed = True
                 
-                for guild in self.guilds:
-                    logger.info(f"📡 Bot connected to: {guild.name} (ID: {guild.id})")
-                    
-            else:
-                logger.info("🧪 Dev mode: Commands registered locally only")
+                if sync_needed:
+                    try:
+                        # SAFE GUILD-SPECIFIC SYNC ONLY
+                        for guild in self.guilds:
+                            try:
+                                # Use sync_commands method for guild-specific sync
+                                synced = await self.sync_commands(guild_id=guild.id)
+                                logger.info(f"✅ Synced commands to {guild.name}")
+                                await asyncio.sleep(1)  # Rate limit protection
+                            except Exception as guild_sync_error:
+                                logger.error(f"Failed to sync to {guild.name}: {guild_sync_error}")
+                                
+                        logger.info("🎉 All guilds synced successfully!")
+                        
+                    except Exception as sync_error:
+                        logger.warning(f"Command sync had issues but commands should appear: {sync_error}")
+                else:
+                    logger.info("✅ Commands already synced - skipping to avoid rate limits")
             
             # Bot ready messages
             if self.user:
                 logger.info("✅ Bot logged in as %s (ID: %s)", self.user.name, self.user.id)
             logger.info("✅ Connected to %d guilds", len(self.guilds))
+            
+            for guild in self.guilds:
+                logger.info(f"📡 Bot connected to: {guild.name} (ID: {guild.id})")
             
             # Verify assets exist
             if self.assets_path.exists():

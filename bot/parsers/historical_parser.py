@@ -162,7 +162,7 @@ class HistoricalParser:
     async def update_progress_embed(self, channel: discord.TextChannel, 
                                    embed_message: discord.Message,
                                    current: int, total: int, server_id: str):
-        """Update progress embed every 30 seconds"""
+        """Update progress embed every 30 seconds - FIXED INTEGRATION ERROR"""
         try:
             progress_percent = (current / total * 100) if total > 0 else 0
             progress_bar_length = 20
@@ -188,10 +188,8 @@ class HistoricalParser:
                 inline=True
             )
             
-            # Add thumbnail
-            thumbnail_path = Path('./assets/main.png')
-            if thumbnail_path.exists():
-                embed.set_thumbnail(url="attachment://main.png")
+            # FIXED: Remove thumbnail reference to avoid "Unknown Integration" error
+            # Thumbnails require file attachments which can't be edited
             
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
             
@@ -203,7 +201,7 @@ class HistoricalParser:
     async def complete_progress_embed(self, embed_message: discord.Message,
                                      server_id: str, processed_count: int, 
                                      duration_seconds: float):
-        """Update embed when refresh is complete"""
+        """Update embed when refresh is complete - FIXED INTEGRATION ERROR"""
         try:
             embed = discord.Embed(
                 title="✅ Historical Data Refresh Complete",
@@ -230,10 +228,8 @@ class HistoricalParser:
                 inline=False
             )
             
-            # Add thumbnail
-            thumbnail_path = Path('./assets/main.png')
-            if thumbnail_path.exists():
-                embed.set_thumbnail(url="attachment://main.png")
+            # FIXED: Remove thumbnail reference to avoid "Unknown Integration" error
+            # Embed edits cannot include file attachments
             
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
             
