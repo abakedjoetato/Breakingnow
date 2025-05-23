@@ -662,6 +662,9 @@ class Leaderboards(commands.Cog):
                 replace_existing=True
             )
             logger.info("Leaderboard updates scheduled (every hour)")
+
+            # Schedule only once
+            await self.update_all_leaderboards()
             
         except Exception as e:
             logger.error(f"Failed to schedule leaderboard updates: {e}")
