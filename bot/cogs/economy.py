@@ -385,5 +385,5 @@ class Economy(commands.Cog):
             logger.error(f"Failed to reset wallet: {e}")
             await ctx.respond("❌ Failed to reset wallet.", ephemeral=True)
 
-async def setup(bot):
-    await bot.add_cog(Economy(bot))
+def setup(bot):
+    bot.add_cog(Economy(bot))

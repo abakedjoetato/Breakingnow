@@ -91,7 +91,7 @@ class EmeraldKillfeedBot(commands.Bot):
             
             for cog in cogs:
                 try:
-                    await self.load_extension(cog)
+                    self.load_extension(cog)
                     loaded_cogs.append(cog)
                     logger.info(f"✅ Successfully loaded cog: {cog}")
                 except Exception as e:
@@ -204,8 +204,15 @@ class EmeraldKillfeedBot(commands.Bot):
             cogs_success = await self.load_cogs()
             logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
             
-            # Force command registration check after cog loading
-            await asyncio.sleep(0.1)  # Allow py-cord to process command registration
+            # Give py-cord time to process async setup functions
+            await asyncio.sleep(0.5)  # Allow py-cord to process command registration
+            
+            # Now manually sync commands to ensure they're registered
+            try:
+                await self.sync_commands()
+                logger.info("🔄 Command sync completed")
+            except Exception as sync_error:
+                logger.warning(f"⚠️ Command sync failed: {sync_error}")
             
             # Commands are now registered
             command_count = len(self.pending_application_commands) if hasattr(self, 'pending_application_commands') else 0
@@ -273,9 +280,9 @@ class EmeraldKillfeedBot(commands.Bot):
                         # SAFE GUILD-SPECIFIC SYNC ONLY
                         for guild in self.guilds:
                             try:
-                                # Use sync_commands method for guild-specific sync
-                                synced = await self.sync_commands(guild_id=guild.id)
-                                logger.info(f"✅ Synced commands to {guild.name}")
+                                # Use sync_commands method for guild-specific sync (py-cord 2.6.1 syntax)
+                                synced = await self.sync_commands(guild=guild)
+                                logger.info(f"✅ Synced {len(synced)} commands to {guild.name}")
                                 await asyncio.sleep(1)  # Rate limit protection
                             except Exception as guild_sync_error:
                                 logger.error(f"Failed to sync to {guild.name}: {guild_sync_error}")

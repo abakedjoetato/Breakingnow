@@ -406,5 +406,5 @@ class Linking(commands.Cog):
             logger.error(f"Failed to unlink characters: {e}")
             await ctx.respond("❌ Failed to unlink characters.", ephemeral=True)
 
-async def setup(bot):
-    await bot.add_cog(Linking(bot))
+def setup(bot):
+    bot.add_cog(Linking(bot))
