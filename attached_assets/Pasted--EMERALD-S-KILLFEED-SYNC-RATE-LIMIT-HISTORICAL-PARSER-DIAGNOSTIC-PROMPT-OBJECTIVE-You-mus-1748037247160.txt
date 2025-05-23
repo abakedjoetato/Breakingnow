@@ -1,0 +1,214 @@
+
+# EMERALD'S KILLFEED — SYNC RATE LIMIT & HISTORICAL PARSER DIAGNOSTIC PROMPT
+
+## OBJECTIVE
+
+You must perform a clean startup of the bot and deeply investigate two critical issues:
+1. Persistent **rate limit errors on slash command sync** at every restart
+2. An **“Unknown Integration” error** occurring during the **historical parser execution**
+
+These must be resolved in a single batch operation without any checkpoints, commits, or speculative fixes.
+
+---
+
+## PHASE 0 — STANDARD INITIALIZATION (PRODUCTION MODE)
+
+### Step 1: Project Preparation
+
+- If `.zip` or `.tar.gz` exists in `attached_assets/`:
+  - Unzip the archive
+  - Move all contents to the root project directory
+  - Delete any nested folders (e.g. `project/project`)
+  - Remove duplicates, broken symlinks, and empty directories
+
+### Step 2: Runtime Setup
+
+- Set environment variable:
+  ```bash
+  MODE=production
+
+Step 3: Library Validation
+
+Ensure Pycord version:
+
+pip freeze | grep py-cord
+
+Must return:
+
+py-cord==2.6.1
+
+If incorrect:
+
+pip install -U py-cord==2.6.1
+
+Audit all imports to confirm discord.py is not used.
+
+
+Step 4: Start the Bot
+
+Use Replit “Run” or:
+
+python main.py
+
+Wait for:
+
+Gateway connection
+
+Cog load confirmation
+
+Slash command sync
+
+Mongo and SFTP session start
+
+
+
+# [PHASE 0] - DONE
+
+
+---
+
+PHASE 1 — COMMAND SYNC RATE LIMIT INVESTIGATION
+
+Problem:
+
+The bot hits Discord API rate limits on slash command registration every time it starts.
+
+Required Analysis:
+
+Confirm whether the bot is:
+
+Re-uploading slash commands globally every restart
+
+Overwriting commands instead of caching/checking
+
+Running bot.tree.sync() (or equivalent) outside of on_ready() or on_connect()
+
+Syncing both globally and per-guild simultaneously
+
+
+Validate:
+
+Where .sync() is called
+
+How commands are built and registered
+
+Whether commands are only updated when changes are detected
+
+
+
+Required Fixes:
+
+Implement conditional sync logic:
+
+Sync only if command schema has changed
+
+Use version tagging or hashing to track changes
+
+
+Rate-limit-safe registration using:
+
+await tree.sync(guild=guild)  # Only if required
+
+Move sync to post-connection hook (e.g., on_ready) with delay buffer
+
+
+# [PHASE 1] - DONE
+
+
+---
+
+PHASE 2 — HISTORICAL PARSER “UNKNOWN INTEGRATION” ERROR
+
+Issue:
+
+Running the historical CSV parser results in an “Unknown Integration” error.
+
+Investigative Scope:
+
+Confirm:
+
+Which system outputs this error: Discord, MongoDB, SFTP, or internal logging
+
+Whether the error occurs during:
+
+File discovery
+
+Data parsing
+
+Database insert
+
+Embed output
+
+
+
+Trace full call stack if available
+
+Enable detailed debug logging for:
+
+Historical parser
+
+Discord client
+
+SFTP fetch
+
+Mongo writes
+
+
+
+Required Fixes:
+
+If Discord integration ID is the issue:
+
+Replace any deprecated webhook or integration use
+
+Switch to raw embed output via bot message
+
+
+If internal integration mapping fails:
+
+Normalize all keys
+
+Ensure no null/undefined services are referenced
+
+
+Validate data being parsed (e.g., name fields, kill types) against all expected formats
+
+
+Final Validation:
+
+Manually trigger historical parse via command
+
+Confirm:
+
+No errors thrown
+
+Stats updated properly
+
+Killfeed not triggered
+
+Data written to Mongo
+
+Progress update embed appears in invoking channel
+
+
+
+# [PHASE 2] - DONE
+
+
+---
+
+DEVELOPMENT RULES (MANDATORY)
+
+Pycord v2.6.1 only — no discord.py
+
+No assumptions — test and validate all fixes
+
+No monkeypatches or hotfixes
+
+No commits or outputs until all issues are verified fixed
+
+All fixes must be implemented in a single batch
+
+Restart the bot and re-validate after changes
+
+
