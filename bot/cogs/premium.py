@@ -634,5 +634,5 @@ class Premium(commands.Cog):
             logger.error(f"Failed to refresh server: {e}")
             await ctx.respond("❌ Failed to refresh server data.", ephemeral=True)
 
-async def setup(bot):
-    await bot.add_cog(Premium(bot))
+def setup(bot):
+    bot.add_cog(Premium(bot))

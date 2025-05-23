@@ -164,5 +164,5 @@ class EmbedTest(commands.Cog):
         file = discord.File('assets/main.png', filename='main.png')
         await ctx.respond(embed=embed, file=file)
 
-async def setup(bot):
-    await bot.add_cog(EmbedTest(bot))
+def setup(bot):
+    bot.add_cog(EmbedTest(bot))
