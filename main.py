@@ -43,54 +43,44 @@ class EmeraldKillfeedBot(commands.Bot):
         intents.guilds = True
         intents.members = True
         
-        # Configure debug_guilds at initialization to avoid rate limits
-        debug_guild_id = os.getenv('GUILD_ID', '1219706687980568769')  # Default to Emerald Servers
-        
         super().__init__(
-            command_prefix='!',
+            command_prefix="!",
             intents=intents,
             help_command=None,
-            case_insensitive=True,
-            debug_guilds=[int(debug_guild_id)]  # Enable immediate command sync
+            status=discord.Status.online,
+            activity=discord.Game(name="Emerald's Killfeed v2.0")
         )
         
-        # Bot configuration
-        self.mongo_client = None
+        # Initialize variables
         self.database = None
-        self.db_manager = None
-        self.scheduler = AsyncIOScheduler()
-        self.dev_mode = os.getenv('DEV_MODE', 'false').lower() == 'true'
-        
-        # Parsers (PHASE 2)
+        self.scheduler = None
         self.killfeed_parser = None
-        self.historical_parser = None
         self.log_parser = None
+        self.historical_parser = None
+        self.ssh_connections = []
         
-        # Asset paths
-        self.assets_path = Path('./assets')
-        self.dev_data_path = Path('./dev_data')
-        
-        logger.info("Bot initialized in %s mode", "development" if self.dev_mode else "production")
+        logger.info("Bot initialized in production mode")
     
     async def setup_hook(self):
-        """Setup hook called when bot is starting - RATE LIMIT SAFE VERSION"""
-        logger.info("🚀 Setup hook - Loading cogs only...")
+        """Setup hook called when bot is starting - py-cord version"""
+        logger.info("🚀 Setup hook - Loading cogs...")
         
         try:
-            # ONLY load cogs in setup_hook to register commands
+            # Load cogs in setup_hook for py-cord
             logger.info("🔧 Loading cogs for command registration...")
-            cogs_success = self.load_cogs()
+            cogs_success = await self.load_cogs()
             logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
             
-            # Commands are now registered but NOT synced to Discord yet
+            # Commands are now registered
             command_count = len(self.pending_application_commands) if hasattr(self, 'pending_application_commands') else 0
-            logger.info(f"📊 {command_count} commands registered locally (sync will happen in on_ready)")
+            logger.info(f"📊 {command_count} commands registered locally")
             
         except Exception as e:
             logger.error(f"❌ Critical error in setup_hook: {e}")
-            raise
+            import traceback
+            traceback.print_exc()
     
-    def load_cogs(self):
+    async def load_cogs(self):
         """Load all bot cogs"""
         try:
             # Load cogs in order
@@ -113,7 +103,7 @@ class EmeraldKillfeedBot(commands.Bot):
             
             for cog in cogs:
                 try:
-                    self.load_extension(cog)
+                    await self.load_extension(cog)
                     loaded_cogs.append(cog)
                     logger.info(f"✅ Successfully loaded cog: {cog}")
                 except Exception as e:
