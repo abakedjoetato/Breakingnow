@@ -282,12 +282,16 @@ class EmeraldKillfeedBot(commands.Bot):
                             try:
                                 # Use sync_commands method for guild-specific sync (py-cord 2.6.1 syntax)
                                 synced = await self.sync_commands(guild_ids=[guild.id])
-                                logger.info(f"✅ Synced {len(synced)} commands to {guild.name}")
+                                if synced:
+                                    logger.info(f"✅ Synced {len(synced)} commands to {guild.name}")
+                                else:
+                                    logger.info(f"✅ Synced commands to {guild.name} (count unavailable)")
                                 await asyncio.sleep(1)  # Rate limit protection
                             except Exception as guild_sync_error:
                                 logger.error(f"Failed to sync to {guild.name}: {guild_sync_error}")
+                                continue  # Continue with next guild even if one fails
                                 
-                        logger.info("🎉 All guilds synced successfully!")
+                        logger.info("🎉 Guild command sync process completed")
                         
                     except Exception as sync_error:
                         logger.warning(f"Command sync had issues but commands should appear: {sync_error}")
