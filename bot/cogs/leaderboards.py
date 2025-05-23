@@ -27,9 +27,9 @@ class Leaderboards(commands.Cog):
         self.bot = bot
         self.leaderboard_messages: Dict[int, Dict[str, int]] = {}  # Track persistent leaderboard message IDs per guild
         
-    async def cog_load(self):
+    def cog_load(self):
         """Called when the cog is loaded"""
-        await self.schedule_leaderboard_updates()
+        self.bot.loop.create_task(self.schedule_leaderboard_updates())
         
     async def check_premium_server(self, guild_id: int) -> bool:
         """Check if guild has premium access for leaderboard features"""
@@ -672,5 +672,5 @@ class Leaderboards(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to schedule leaderboard updates: {e}")
 
-async def setup(bot):
-    await bot.add_cog(Leaderboards(bot))
+def setup(bot):
+    bot.add_cog(Leaderboards(bot))
