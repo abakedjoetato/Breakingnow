@@ -23,9 +23,12 @@ class Leaderboards(commands.Cog):
     - Tracks: kills, KDR, streaks, factions, bounty claims
     """
     
-    async def __init__(self, bot):
+    def __init__(self, bot):
         self.bot = bot
         self.leaderboard_messages: Dict[int, Dict[str, int]] = {}  # Track persistent leaderboard message IDs per guild
+        
+    async def cog_load(self):
+        """Called when the cog is loaded"""
         await self.schedule_leaderboard_updates()
         
     async def check_premium_server(self, guild_id: int) -> bool:
@@ -669,8 +672,5 @@ class Leaderboards(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to schedule leaderboard updates: {e}")
 
-def setup(bot):
-    async def setup_async():
-        cog = await Leaderboards(bot)
-        await bot.add_cog(cog)
-    bot.loop.create_task(setup_async())
+async def setup(bot):
+    await bot.add_cog(Leaderboards(bot))
