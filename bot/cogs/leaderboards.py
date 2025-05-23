@@ -672,5 +672,5 @@ class Leaderboards(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to schedule leaderboard updates: {e}")
 
-def setup(bot):
-    bot.add_cog(Leaderboards(bot))
+async def setup(bot):
+    await bot.add_cog(Leaderboards(bot))
