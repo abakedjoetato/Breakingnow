@@ -353,7 +353,10 @@ class LogParser:
                             port=sftp_port,
                             username=sftp_username,
                             password=sftp_password,
-                            known_hosts=None
+                            known_hosts=None,
+                            kex_algs=['diffie-hellman-group1-sha1', 'diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha1'],
+                            encryption_algs=['aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-cbc', 'aes192-cbc', 'aes256-cbc'],
+                            mac_algs=['hmac-sha1', 'hmac-sha2-256', 'hmac-sha2-512']
                         ),
                         timeout=30
                     )

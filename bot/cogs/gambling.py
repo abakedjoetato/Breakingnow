@@ -524,5 +524,5 @@ class Gambling(commands.Cog):
             logger.error(f"Failed to process roulette: {e}")
             await ctx.respond("❌ Roulette game failed. Please try again.", ephemeral=True)
 
-def setup(bot):
-    bot.add_cog(Gambling(bot))
+async def setup(bot):
+    await bot.add_cog(Gambling(bot))

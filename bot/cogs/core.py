@@ -219,5 +219,5 @@ class Core(commands.Cog):
         except:
             return "Unknown"
 
-def setup(bot):
-    bot.add_cog(Core(bot))
+async def setup(bot):
+    await bot.add_cog(Core(bot))

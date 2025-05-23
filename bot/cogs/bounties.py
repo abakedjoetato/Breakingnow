@@ -555,5 +555,5 @@ class Bounties(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to send auto-bounty embed: {e}")
 
-def setup(bot):
-    bot.add_cog(Bounties(bot))
+async def setup(bot):
+    await bot.add_cog(Bounties(bot))

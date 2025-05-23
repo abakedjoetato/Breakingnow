@@ -391,5 +391,5 @@ class Stats(commands.Cog):
             logger.error(f"Failed to compare stats: {e}")
             await ctx.respond("❌ Failed to compare statistics.", ephemeral=True)
 
-def setup(bot):
-    bot.add_cog(Stats(bot))
+async def setup(bot):
+    await bot.add_cog(Stats(bot))

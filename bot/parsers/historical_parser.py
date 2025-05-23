@@ -88,10 +88,18 @@ class HistoricalParser:
                 logger.warning("SFTP credentials not configured")
                 return []
             
-            # Connect to SFTP
+            # Connect to SFTP with relaxed security for older servers
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(sftp_host, port=sftp_port, username=sftp_username, password=sftp_password)
+            ssh.connect(
+                sftp_host, 
+                port=sftp_port, 
+                username=sftp_username, 
+                password=sftp_password,
+                disabled_algorithms={'kex': ['diffie-hellman-group14-sha1']},
+                allow_agent=False,
+                look_for_keys=False
+            )
             
             sftp = ssh.open_sftp()
             
