@@ -277,10 +277,16 @@ class EmeraldKillfeedBot(commands.Bot):
                 
                 if sync_needed:
                     try:
-                        # SAFE GUILD-SPECIFIC SYNC ONLY
+                        # Try global sync first
+                        logger.info("Attempting global command sync...")
+                        await self.sync_commands()
+                        logger.info("✅ Global command sync successful")
+                    except Exception as global_sync_error:
+                        logger.warning(f"Global sync failed, falling back to per-guild: {global_sync_error}")
+                        
+                        # Fall back to guild-specific sync
                         for guild in self.guilds:
                             try:
-                                # Use sync_commands method for guild-specific sync (py-cord 2.6.1 syntax)
                                 synced = await self.sync_commands(guild_ids=[guild.id])
                                 if synced:
                                     logger.info(f"✅ Synced {len(synced)} commands to {guild.name}")
@@ -289,12 +295,9 @@ class EmeraldKillfeedBot(commands.Bot):
                                 await asyncio.sleep(1)  # Rate limit protection
                             except Exception as guild_sync_error:
                                 logger.error(f"Failed to sync to {guild.name}: {guild_sync_error}")
-                                continue  # Continue with next guild even if one fails
-                                
-                        logger.info("🎉 Guild command sync process completed")
+                                continue
                         
-                    except Exception as sync_error:
-                        logger.warning(f"Command sync had issues but commands should appear: {sync_error}")
+                        logger.info("🎉 Guild fallback sync completed")
                 else:
                     logger.info("✅ Commands already synced - skipping to avoid rate limits")
             
