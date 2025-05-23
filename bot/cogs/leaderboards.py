@@ -651,7 +651,7 @@ class Leaderboards(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to update leaderboards: {e}")
     
-    def schedule_leaderboard_updates(self):
+    async def schedule_leaderboard_updates(self):
         """Schedule hourly leaderboard updates"""
         try:
             self.bot.scheduler.add_job(
