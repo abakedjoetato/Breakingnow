@@ -23,10 +23,10 @@ class Leaderboards(commands.Cog):
     - Tracks: kills, KDR, streaks, factions, bounty claims
     """
     
-    def __init__(self, bot):
+    async def __init__(self, bot):
         self.bot = bot
         self.leaderboard_messages: Dict[int, Dict[str, int]] = {}  # Track persistent leaderboard message IDs per guild
-        self.schedule_leaderboard_updates()
+        await self.schedule_leaderboard_updates()
         
     async def check_premium_server(self, guild_id: int) -> bool:
         """Check if guild has premium access for leaderboard features"""
@@ -669,8 +669,6 @@ class Leaderboards(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to schedule leaderboard updates: {e}")
 
-def setup(bot):
-    cog = Leaderboards(bot)
-    bot.add_cog(cog)
-    # Schedule leaderboard updates when cog is loaded
-    cog.schedule_leaderboard_updates()
+async def setup(bot):
+    cog = await Leaderboards(bot)
+    await bot.add_cog(cog)
