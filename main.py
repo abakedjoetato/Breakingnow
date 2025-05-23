@@ -91,7 +91,7 @@ class EmeraldKillfeedBot(commands.Bot):
             
             for cog in cogs:
                 try:
-                    self.load_extension(cog)
+                    await self.load_extension(cog)
                     loaded_cogs.append(cog)
                     logger.info(f"✅ Successfully loaded cog: {cog}")
                 except Exception as e:
@@ -204,9 +204,19 @@ class EmeraldKillfeedBot(commands.Bot):
             cogs_success = await self.load_cogs()
             logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
             
+            # Force command registration check after cog loading
+            await asyncio.sleep(0.1)  # Allow py-cord to process command registration
+            
             # Commands are now registered
             command_count = len(self.pending_application_commands) if hasattr(self, 'pending_application_commands') else 0
             logger.info(f"📊 {command_count} commands registered locally")
+            
+            # Debug: List actual commands if any
+            if command_count > 0:
+                command_names = [cmd.name for cmd in self.pending_application_commands]
+                logger.info(f"🔍 Commands found: {', '.join(command_names[:5])}{'...' if len(command_names) > 5 else ''}")
+            else:
+                logger.warning("⚠️ No commands registered - this may indicate a cog loading issue")
             
         except Exception as e:
             logger.error(f"❌ Critical error loading cogs: {e}")
