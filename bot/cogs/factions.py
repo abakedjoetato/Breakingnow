@@ -663,5 +663,5 @@ class Factions(commands.Cog):
             logger.error(f"Failed to list factions: {e}")
             await ctx.respond("❌ Failed to retrieve faction list.", ephemeral=True)
 
-def setup(bot):
-    bot.add_cog(Factions(bot))
+async def setup(bot):
+    await bot.add_cog(Factions(bot))

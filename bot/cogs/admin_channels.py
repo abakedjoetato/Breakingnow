@@ -331,5 +331,5 @@ class AdminChannels(commands.Cog):
             logger.error(f"Failed to view channels: {e}")
             await ctx.respond("❌ Failed to retrieve channel configuration.", ephemeral=True)
 
-def setup(bot):
-    bot.add_cog(AdminChannels(bot))
+async def setup(bot):
+    await bot.add_cog(AdminChannels(bot))

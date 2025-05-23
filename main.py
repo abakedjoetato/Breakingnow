@@ -79,7 +79,7 @@ class EmeraldKillfeedBot(commands.Bot):
         try:
             # ONLY load cogs in setup_hook to register commands
             logger.info("🔧 Loading cogs for command registration...")
-            cogs_success = await self.load_cogs()
+            cogs_success = self.load_cogs()
             logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
             
             # Commands are now registered but NOT synced to Discord yet
@@ -90,7 +90,7 @@ class EmeraldKillfeedBot(commands.Bot):
             logger.error(f"❌ Critical error in setup_hook: {e}")
             raise
     
-    async def load_cogs(self):
+    def load_cogs(self):
         """Load all bot cogs"""
         try:
             # Load cogs in order
