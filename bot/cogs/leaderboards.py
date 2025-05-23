@@ -669,6 +669,8 @@ class Leaderboards(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to schedule leaderboard updates: {e}")
 
-async def setup(bot):
-    cog = await Leaderboards(bot)
-    await bot.add_cog(cog)
+def setup(bot):
+    async def setup_async():
+        cog = await Leaderboards(bot)
+        await bot.add_cog(cog)
+    bot.loop.create_task(setup_async())
