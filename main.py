@@ -53,32 +53,20 @@ class EmeraldKillfeedBot(commands.Bot):
         
         # Initialize variables
         self.database = None
-        self.scheduler = None
+        self.scheduler = AsyncIOScheduler()
         self.killfeed_parser = None
         self.log_parser = None
         self.historical_parser = None
         self.ssh_connections = []
         
+        # Missing essential properties
+        self.assets_path = Path('./assets')
+        self.dev_data_path = Path('./dev_data')
+        self.dev_mode = os.getenv('DEV_MODE', 'false').lower() == 'true'
+        
         logger.info("Bot initialized in production mode")
     
-    async def setup_hook(self):
-        """Setup hook called when bot is starting - py-cord version"""
-        logger.info("🚀 Setup hook - Loading cogs...")
-        
-        try:
-            # Load cogs in setup_hook for py-cord
-            logger.info("🔧 Loading cogs for command registration...")
-            cogs_success = await self.load_cogs()
-            logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
-            
-            # Commands are now registered
-            command_count = len(self.pending_application_commands) if hasattr(self, 'pending_application_commands') else 0
-            logger.info(f"📊 {command_count} commands registered locally")
-            
-        except Exception as e:
-            logger.error(f"❌ Critical error in setup_hook: {e}")
-            import traceback
-            traceback.print_exc()
+
     
     async def load_cogs(self):
         """Load all bot cogs"""
@@ -103,7 +91,7 @@ class EmeraldKillfeedBot(commands.Bot):
             
             for cog in cogs:
                 try:
-                    await self.load_extension(cog)
+                    self.load_extension(cog)
                     loaded_cogs.append(cog)
                     logger.info(f"✅ Successfully loaded cog: {cog}")
                 except Exception as e:
@@ -208,7 +196,24 @@ class EmeraldKillfeedBot(commands.Bot):
         if hasattr(self, '_setup_complete'):
             return
         
-        logger.info("🚀 Bot is ready! Starting database and parser setup...")
+        logger.info("🚀 Bot is ready! Loading cogs first...")
+        
+        # CRITICAL: Load cogs FIRST before anything else
+        try:
+            logger.info("🔧 Loading cogs for command registration...")
+            cogs_success = await self.load_cogs()
+            logger.info(f"🎯 Cog loading: {'✅ Complete' if cogs_success else '❌ Failed'}")
+            
+            # Commands are now registered
+            command_count = len(self.pending_application_commands) if hasattr(self, 'pending_application_commands') else 0
+            logger.info(f"📊 {command_count} commands registered locally")
+            
+        except Exception as e:
+            logger.error(f"❌ Critical error loading cogs: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        logger.info("🚀 Now starting database and parser setup...")
         
         try:
             # Connect to MongoDB
