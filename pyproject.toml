@@ -7,7 +7,6 @@ dependencies = [
     "aiofiles>=24.1.0",
     "apscheduler>=3.11.0",
     "asyncssh>=2.21.0",
-    "discord-py>=2.5.2",
     "motor>=3.7.1",
     "paramiko>=3.5.1",
     "py-cord==2.6.1",
