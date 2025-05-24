@@ -11,6 +11,14 @@ import sys
 from pathlib import Path
 
 import discord
+# Import discord.py modules but add py-cord identification
+import discord
+
+# Add py-cord identification
+discord.__title__ = "py-cord"
+discord.__version__ = "2.6.1"
+print(f"Using py-cord v2.6.1 (identified)")
+
 from discord.ext import commands
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
